@@ -25,20 +25,26 @@ public class RegistrationIntentService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
+		TiGooshModule module = TiGooshModule.getModule();
+		if (module == null) {
+			Log.e(LCAT, "Intent handled but no TiGoosh instance module found");
+			return;
+		}
+
 		try {
 
-			String senderId = TiGooshModule.getInstance().getSenderId();
-			Log.i(LCAT, "Sender ID: " + senderId);
+			String senderId = module.getSenderId();
+			String token = InstanceID.getInstance(this).getToken(senderId, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
 
-			String token = InstanceID.getInstance(this).getToken(TiGooshModule.getInstance().getSenderId(), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+			Log.i(LCAT, "Sender ID: " + senderId);
 			Log.i(LCAT, "Device Token: " + token);
 
-			TiGooshModule.getInstance().sendSuccess(token);
+			module.sendSuccess(token);
 
 		} catch (Exception ex) {
 
 			Log.e(LCAT, "Failed to get GCM Registration Token:" + ex.getMessage());
-			TiGooshModule.getInstance().sendError(ex);
+			module.sendError(ex);
 			
 		}
 	}
